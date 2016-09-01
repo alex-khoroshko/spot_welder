@@ -42,10 +42,12 @@
 #include <EEPROM.h>
 
 uint8_t weldTime = 0;
+uint16_t weldCounter = 0;
 const uint8_t eeAddress = 0;
 char lcdString[16+1];
 
 const int buttonPin = 2;    // the number of the pushbutton pin
+const int weldPin = 3;    // the number of the solidstate relay enable pin
 
 // initialize the library with the numbers of the interface pins
 LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
@@ -84,7 +86,18 @@ int read_LCD_buttons()
  return btnNONE;  // when all others fail, return this...
 }
 
+void weldTimeUpdate(void) {
+  lcd.setCursor(0, 0);
+  snprintf (lcdString, 16, "pulse: %i ms%s", weldTime, "                 ");
+  lcd.print(lcdString);
+  EEPROM.update(eeAddress, weldTime);
+}
 
+void weldCntUpdate(void) {
+  lcd.setCursor(0, 1);
+  snprintf (lcdString, 16, "Pulse cnt: %i%s", weldCounter, "                 ");
+  lcd.print(lcdString);
+}
 
 void setup() {
   EEPROM.get(eeAddress, weldTime);
@@ -93,13 +106,8 @@ void setup() {
   // Print a message to the LCD.
   sprintf (lcdString, "pulse: %i ms", weldTime);
   lcd.print(lcdString);
-}
 
-void weldTimeUpdate(void) {
-  lcd.setCursor(0, 0);
-  snprintf (lcdString, 16, "pulse: %i ms%s", weldTime, "                 ");
-  lcd.print(lcdString);
-  EEPROM.update(eeAddress, weldTime);
+  weldCntUpdate ();
 }
 
 int lcd_key_prev = btnNONE;
@@ -107,9 +115,9 @@ int lcd_key_prev = btnNONE;
 void loop() {
   // set the cursor to column 0, line 1
   // (note: line 1 is the second row, since counting begins with 0):
-  lcd.setCursor(0, 1);
+  //lcd.setCursor(0, 1);
   // print the number of seconds since reset:
-  lcd.print(millis() / 1000);
+  //lcd.print(millis() / 1000);
 
   lcd_key = read_LCD_buttons();  // read the buttons
   if (lcd_key != lcd_key_prev) {
@@ -118,36 +126,42 @@ void loop() {
       {
        case btnRIGHT:
          {
-         lcd.print("RIGHT ");
+         //lcd.print("RIGHT ");
          break;
          }
        case btnLEFT:
          {
-         lcd.print("LEFT   ");
+         //lcd.print("LEFT   ");
          break;
          }
        case btnUP:
          {
-         lcd.print("UP    ");
+         //lcd.print("UP    ");
          weldTime++;
          weldTimeUpdate();
          break;
          }
        case btnDOWN:
          {
-         lcd.print("DOWN  ");
+         //lcd.print("DOWN  ");
          weldTime--;
          weldTimeUpdate();
          break;
          }
        case btnSELECT:
          {
-         lcd.print("SELECT");
+         //lcd.print("SELECT");
+         weldCounter++;
+         digitalWrite(weldPin, HIGH);
+         delay(weldTime);
+         digitalWrite(weldPin, LOW);
+         weldCntUpdate ();
+         
          break;
          }
          case btnNONE:
          {
-         lcd.print("NONE  ");
+         //lcd.print("NONE  ");
          break;
          }
      }
