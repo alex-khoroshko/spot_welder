@@ -46,8 +46,7 @@ uint16_t weldCounter = 0;
 const uint8_t eeAddress = 0;
 char lcdString[16+1];
 
-const int buttonPin = 2;    // the number of the pushbutton pin
-const int weldPin = 3;    // the number of the solidstate relay enable pin
+const int weldPin = 1;    // the number of the solidstate relay enable pin
 
 // initialize the library with the numbers of the interface pins
 LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
@@ -100,6 +99,7 @@ void weldCntUpdate(void) {
 }
 
 void setup() {
+  pinMode(weldPin, OUTPUT);
   EEPROM.get(eeAddress, weldTime);
   // set up the LCD's number of columns and rows:
   lcd.begin(16, 2);
